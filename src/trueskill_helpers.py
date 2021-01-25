@@ -10,10 +10,15 @@ def check_fair(p1, p2):
     return True
 
 def report_match(winner, loser):
+    winner.win()
+    loser.lose()
+
     ts = TrueSkill(draw_probability=0)
     winner_rating = Rating(mu=winner.mu, sigma=winner.sigma)
     loser_rating = Rating(mu=loser.mu, sigma=loser.sigma)
+
     new_winner_rating, new_loser_rating = rate_1vs1(winner_rating, loser_rating, drawn=False, min_delta=0.0001, env=ts)
+    
     winner.update_rating(new_winner_rating.sigma, new_winner_rating.mu)
     loser.update_rating(new_loser_rating.sigma, new_loser_rating.mu)
 
