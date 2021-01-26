@@ -1,6 +1,7 @@
 from src.player import Player
 from src.trueskill_helpers import check_fair, report_match
 import numpy as np
+from src.spreadsheet_helpers import players_to_spreadsheet, spreadsheet_to_players
 
 players = []
 num_players = 10
@@ -18,3 +19,7 @@ for match in range(num_matches):
 
 for player in players:
     player.skill_report()
+
+players_to_spreadsheet("backups/backup.csv", players)
+new_players = spreadsheet_to_players('backups/backup.csv')
+
