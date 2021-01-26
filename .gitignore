@@ -2,3 +2,4 @@
 src/api_key.txt
 src/api_key.json
 .env
+backups/backups.csv

@@ -1,0 +1,12 @@
+Opponent or admin verifies match reporting with check mark react
+
+Decide ranked tier thresholds
+
+Apply roles based on ranked tier
+
+Add matchmaking
+    Users specify how long they want to be in queue ex. ,queue 5
+    Figure out how close players have to be to be matched
+
+Placement match system
+    To move up a tier, a bo3 must be played between players of your or higher tier
