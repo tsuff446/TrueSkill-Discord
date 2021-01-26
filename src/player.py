@@ -3,8 +3,9 @@ class Player():
     default_sigma = 25/3
     default_mu = 25
 
-    def __init__(self, discord_name, sigma=None, mu=None, wins=None, losses=None):
-        self.discord_name = discord_name
+    def __init__(self, discord_id, discord_alias, sigma=None, mu=None, wins=None, losses=None):
+        self.discord_id = discord_id
+        self.discord_alias = discord_alias
 
         self.sigma = sigma
         if not sigma:
@@ -23,7 +24,7 @@ class Player():
 
     def skill_report(self, verbose=False):
         print("-------------------------------------")
-        print("Skill Report For: ", self.discord_name)
+        print("Skill Report For: ", self.discord_alias)
         print("Rating: ", self.rating)
         print("W/L: ", self.wins, "/", self.losses)
         if verbose:
@@ -31,7 +32,7 @@ class Player():
             print("Mu: ", self.mu)
 
     def recalc_rating(self):
-        self.rating = self.mu - 3*self.sigma
+        self.rating = max(0, round(self.mu - 3*self.sigma))
     
     def update_rating(self, sigma, mu):
         self.sigma = sigma
@@ -43,3 +44,15 @@ class Player():
     
     def lose(self):
         self.losses += 1
+
+def check_already_exists(check, players):
+    for player in players:
+        if check.discord_id == player.discord_id:
+            return True
+    return False
+
+def find_player(id, players):
+    for player in players:
+        if id == player.discord_id:
+            return player
+    return None
