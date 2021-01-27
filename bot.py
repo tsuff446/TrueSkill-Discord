@@ -1,9 +1,7 @@
 from dotenv import load_dotenv
 from discord.ext import tasks, commands
 import os
-from src import matchmaking
-from src.spreadsheet_helpers import players_to_spreadsheet, spreadsheet_to_players
-from src.player import Player, check_already_exists, find_player
+from src.player import Player, PlayerList
 from src.trueskill_helpers import report_match
 from src.matchmaking import PlayerQueue
 
@@ -11,7 +9,8 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
-players = spreadsheet_to_players('backups/backups.csv')
+#create list of players and queue
+players = PlayerList(backup_path='backups/backup.csv')
 matchmaking_queue = PlayerQueue()
 
 bot = commands.Bot(command_prefix='!')
@@ -30,13 +29,13 @@ async def create_profile(ctx):
     new_player = Player(mem.id, mem.name)
 
     #checks if player exists
-    if check_already_exists(new_player, players):
+    if players.check_player_exist(new_player):
         await ctx.send("Player already exists")
         return
 
     #adds player to db
-    players.append(new_player)
-    players_to_spreadsheet('backups/backups.csv', players)
+    players.add_player(new_player)
+    players.backup_to_spreadsheet('backups/backup.csv')
     await ctx.send("Created profile for " + str(mem.name))
 
 @bot.command(name="report")
@@ -54,8 +53,8 @@ async def report(ctx):
         return
 
     #find players
-    winner = find_player(winner_id, players)
-    loser = find_player(loser_id, players)
+    winner = players.find_player_by_id(winner_id)
+    loser = players.find_player_by_id(loser_id)
 
     if not winner or not loser:
         await ctx.send("One of the players could not be found")
@@ -63,7 +62,7 @@ async def report(ctx):
     
     #update ratings
     report_match(winner, loser)
-    players_to_spreadsheet('backups/backups.csv', players)
+    players.backup_to_spreadsheet('backups/backup.csv')
     await ctx.send("Reported Match")
     return
 
@@ -74,7 +73,7 @@ async def display_profile(ctx):
     else:
         mem = ctx.author
 
-    player = find_player(mem.id, players)
+    player = players.find_player_by_id(mem.id)
     if not player:
         await ctx.send("User not found")
         return
@@ -84,14 +83,14 @@ async def display_profile(ctx):
 
 @bot.command(name="backup")
 async def backup_data(ctx):
-    players_to_spreadsheet('backups/backups.csv', players)
+    players.backup_to_spreadsheet('backups/backup.csv')
     await ctx.send("Backed up data")
     return
 
 #enter queue
 #ex. !queue 5 (Enter queue for next 5 minutes)
 @bot.command(name="queue")
-async def backup_data(ctx):
+async def enter_queue(ctx):
     message = ctx.message.content.strip().split()
     if len(message) == 1:
         #default queue time
@@ -113,7 +112,7 @@ async def backup_data(ctx):
         await ctx.send("Must queue for at least 1 minute")
         return
 
-    player = find_player(ctx.author.id, players)
+    player = players.find_player_by_id(ctx.author.id)
     if not player:
         await ctx.send("You have not created a profile yet. Type !create to make a profile")
         return
@@ -129,8 +128,8 @@ async def backup_data(ctx):
 
 #leaves queue
 @bot.command(name="leave")
-async def backup_data(ctx):
-    player = find_player(ctx.author.id, players)
+async def leave_queue(ctx):
+    player = players.find_player_by_id(ctx.author.id)
 
     if not player:
         await ctx.send("You have not created a profile yet. Type !create to make a profile")
@@ -140,11 +139,12 @@ async def backup_data(ctx):
         await ctx.send("Successfully removed from queue")
     else:
         await ctx.send("You were not in queue")
+
     return
 
 #displays queue
 @bot.command(name="show_queue")
-async def backup_data(ctx):
+async def show_queue(ctx):
     message = matchmaking_queue.display_queue()
     if len(message) > 0:
         await ctx.send(message)
