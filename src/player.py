@@ -55,7 +55,7 @@ class Player():
 
 def check_already_exists(check, players):
     for player in players:
-        if check.discord_id == player.discord_id:
+        if check == player:
             return True
     return False
 
