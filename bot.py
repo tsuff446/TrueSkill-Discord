@@ -11,9 +11,6 @@ GUILD = os.getenv('DISCORD_GUILD')
 
 players = spreadsheet_to_players('backups/backups.csv')
 
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-
 bot = commands.Bot(command_prefix='!')
 
 @bot.event
