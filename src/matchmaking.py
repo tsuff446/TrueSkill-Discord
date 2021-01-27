@@ -1,7 +1,6 @@
 import time
-import bisect
 
-#maintains a sorted queue based on time of expiry
+#maintains a sorted queue based on how long player has
 class PlayerQueue():
     def __init__(self):
         #queue will contain (leave_time, player) tuples
@@ -11,10 +10,10 @@ class PlayerQueue():
     #wants to be in queue in minutes
     def enqueue_player(self, player, expiry):
         leave_time = time.time() + expiry*60
-        self.binary_insert((leave_time, player))
+        self._binary_insert((leave_time, player))
     
     #repurposed from python standard library
-    def binary_insert(self, tup):
+    def _binary_insert(self, tup):
         leave_time = tup[0]
         low = 0
         high = len(self._queue)
@@ -29,7 +28,7 @@ class PlayerQueue():
     #removes players from queue if leave_time is reached
     def prune_queue(self):
         currTime = time.time()
-        while self._queue[0][0] < currTime:
+        while len(self._queue) > 0 and self._queue[0][0] < currTime:
             self._queue.pop(0)
 
     #clears queue
