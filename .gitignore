@@ -4,3 +4,4 @@ src/api_key.json
 .env
 backups/backups.csv
 .vscode
+main.py

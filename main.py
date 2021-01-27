@@ -3,23 +3,19 @@ from src.trueskill_helpers import check_fair, report_match
 import numpy as np
 from src.spreadsheet_helpers import players_to_spreadsheet, spreadsheet_to_players
 import matplotlib.pyplot as plt
+from src.matchmaking import PlayerQueue
 
 players = []
-num_players = 100
-num_matches = 100000
+num_players = 5
 
 for i in range(num_players):
     players.append(Player(str(i), str(i)))
 
-for match in range(num_matches):
-    participants = np.random.choice(players, 2, replace=False)
-    if int(participants[1].discord_id) < int(participants[0].discord_id):
-        report_match(participants[1], participants[0])
-        continue
-    report_match(participants[0], participants[1])
-
+mm_queue = PlayerQueue()
 for player in players:
-    player.skill_report()
+    #choose random amount of minutes
+    mins = np.random.choice([5, 10, 20])
+    print(mins)
+    mm_queue.enqueue_player(player, mins)
 
-plt.hist([player.rating for player in players])
-plt.show()
+print(mm_queue._queue)
