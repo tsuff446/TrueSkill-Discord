@@ -5,7 +5,7 @@ Decide ranked tier thresholds
 Apply roles based on ranked tier
 
 Add matchmaking
-    Users specify how long they want to be in queue ex. ,queue 5
+    Users specify how long they want to be in queue ex. ,queue 5 -- Thomas is working on this now
     Figure out how close players have to be to be matched
 
 Placement match system
