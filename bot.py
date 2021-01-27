@@ -1,21 +1,25 @@
 from dotenv import load_dotenv
-from discord.ext import commands
+from discord.ext import tasks, commands
 import os
+from src import matchmaking
 from src.spreadsheet_helpers import players_to_spreadsheet, spreadsheet_to_players
 from src.player import Player, check_already_exists, find_player
 from src.trueskill_helpers import report_match
+from src.matchmaking import PlayerQueue
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
 players = spreadsheet_to_players('backups/backups.csv')
+matchmaking_queue = PlayerQueue()
 
 bot = commands.Bot(command_prefix='!')
 
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
+    auto_prune_queue.start()
 
 @bot.command(name="create")
 async def create_profile(ctx):
@@ -83,5 +87,74 @@ async def backup_data(ctx):
     players_to_spreadsheet('backups/backups.csv', players)
     await ctx.send("Backed up data")
     return
+
+#enter queue
+#ex. !queue 5 (Enter queue for next 5 minutes)
+@bot.command(name="queue")
+async def backup_data(ctx):
+    message = ctx.message.content.strip().split()
+    if len(message) == 1:
+        #default queue time
+        message = "30"
+    else:
+        message = message[1]
+
+    if not message.isnumeric():
+        await ctx.send("Must be in queue for a whole number amount of minutes")
+        return
+
+    queue_time = int(message)
+
+    if queue_time > 180:
+        await ctx.send("You cannot queue for longer than 3 hours")
+        return
+    
+    if queue_time <= 0:
+        await ctx.send("Must queue for at least 1 minute")
+        return
+
+    player = find_player(ctx.author.id, players)
+    if not player:
+        await ctx.send("You have not created a profile yet. Type !create to make a profile")
+        return
+
+    if matchmaking_queue.check_in_queue(player):
+        await ctx.send("Already in queue!")
+        return
+
+    matchmaking_queue.enqueue_player(player, queue_time)
+    await ctx.send("Successfully queued for " + str(queue_time) + " minutes")
+    return
+
+
+#leaves queue
+@bot.command(name="leave")
+async def backup_data(ctx):
+    player = find_player(ctx.author.id, players)
+
+    if not player:
+        await ctx.send("You have not created a profile yet. Type !create to make a profile")
+        return
+
+    if matchmaking_queue.remove_player(player):
+        await ctx.send("Successfully removed from queue")
+    else:
+        await ctx.send("You were not in queue")
+    return
+
+#displays queue
+@bot.command(name="show_queue")
+async def backup_data(ctx):
+    message = matchmaking_queue.display_queue()
+    if len(message) > 0:
+        await ctx.send(message)
+    else:
+        await ctx.send("Queue is currently empty")
+    return
+
+# updates queue
+@tasks.loop(seconds=15.0)
+async def auto_prune_queue():
+    matchmaking_queue.prune_queue()
 
 bot.run(TOKEN)

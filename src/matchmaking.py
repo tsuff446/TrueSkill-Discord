@@ -1,4 +1,6 @@
 import time
+import math
+from src.player import Player
 
 #maintains a sorted queue based on how long player has
 class PlayerQueue():
@@ -34,3 +36,25 @@ class PlayerQueue():
     #clears queue
     def clear_queue(self):
         self._queue.clear()
+
+    #iterates through loop and removes specific player
+    def remove_player(self, player):
+        for index, tup in enumerate(self._queue):
+            if player == tup[1]:
+                self._queue.pop(index)
+                return True
+        return False
+
+    #checks if player in queue
+    def check_in_queue(self, player):
+        for tup in self._queue:
+            if tup[1] == player:
+                return True
+        return False
+    
+    #displays queue in str format
+    def display_queue(self):
+        to_return = []
+        for tup in self._queue:
+            to_return.append(tup[1].discord_alias + ": " + str(math.ceil((tup[0] - time.time()) / 60)) + " minutes left")
+        return '\n'.join(to_return)
