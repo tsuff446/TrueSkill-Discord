@@ -4,6 +4,7 @@ import numpy as np
 from src.spreadsheet_helpers import players_to_spreadsheet, spreadsheet_to_players
 import matplotlib.pyplot as plt
 from src.matchmaking import PlayerQueue
+import time
 
 players = []
 num_players = 5
@@ -14,8 +15,8 @@ for i in range(num_players):
 mm_queue = PlayerQueue()
 for player in players:
     #choose random amount of minutes
-    mins = np.random.choice([5, 10, 20])
-    print(mins)
+    mins = .01
     mm_queue.enqueue_player(player, mins)
+    time.sleep()
 
 print(mm_queue._queue)
